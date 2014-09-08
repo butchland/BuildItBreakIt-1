@@ -52,6 +52,7 @@ class LogAppender
   #---------------------------------------------
   # process and validates arguments
   def process_line(args)
+  	token = ""
     while args.size() > 1
       f_id = args.shift
       if @flag_id.has_key?(f_id)
@@ -68,7 +69,6 @@ class LogAppender
             if token !~ /^([a-zA-Z0-9]+)$/
               output_error
             end
-            @log_line[1] = token
             # puts "processed -K, token: #{token}"
           when '-G', '-E'
             @flag_id.delete('-G')
@@ -77,19 +77,19 @@ class LogAppender
             if eg_name !~ /^([a-zA-Z]+)$/
               output_error
             end
-            @log_line[2] = eg_name
+            @log_line[1] = eg_name
             # puts "processed (-G|-E), name: #{eg_name}"
           when '-A', '-L'
             @flag_id.delete('-A')
             @flag_id.delete('-L')
-            @log_line[3] = f_id
+            @log_line[2] = f_id
             # puts "processed (-A|-L), ad status: #{f_id}"
           when '-R'
             room_id = args.shift
             if room_id !~ /^([0-9]+)$/
               output_error
             end
-            @log_line[4] = room_id
+            @log_line[3] = room_id
             # puts "processed (-G|-E), name: #{name}"
           else 
             output_error
@@ -108,13 +108,18 @@ class LogAppender
     if log_file !~ /^(([a-zA-Z0-9_]+)|(\/[a-zA-Z0-9_]+)+)$/
       output_error
     end
+      puts log_file
 
     if file_exists?(log_file)
       # append to it
+      log_F = File.open(log_file, 'w')
+      log_F.write(LogAppender.encryptor(@log_line.join,token))
     else
       # create new file
 
     end
+
+    
 
     puts "#{@log_line}"
   end
@@ -139,18 +144,6 @@ class LogAppender
 
   end
 
-  #---------------------------------------------
-  # Adds person to log file. If log file does 
-  # not exist, one is created
-  def append_to_log(filename, person)
-    # check if file exists
-    # file_exists = File.file?('logs/log1')
-    # if file_exists
-
-    # end
-    IO.binwrite(filename, person)
-  end
-
 end
 
 #------------------------------------------------
@@ -160,6 +153,7 @@ logger = LogAppender.new
 
 # check # of command line arguments
 if ARGV.length == 10 || ARGV.length == 8
+	puts "running"
   logger.process_line(ARGV)
 
 elsif ARGV.length == 2 && logger.valid_batch?(ARGV)
