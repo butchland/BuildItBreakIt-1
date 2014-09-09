@@ -113,7 +113,9 @@ class LogAppender
     if file_exists?(log_file)
       # append to it
       log_F = File.open(log_file, 'w')
-      log_F.write(LogAppender.encryptor(@log_line.join,token))
+      puts token
+      log_encrypted_64 = Base64.encode64(LogAppender.encryptor(@log_line.join(", "),token))
+      log_F.write(log_encrypted_64)
     else
       # create new file
 
